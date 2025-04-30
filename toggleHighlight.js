@@ -1,32 +1,28 @@
-// Check if highlighting is already active
-if (window.__highlightLinksActive__) {
-    // Remove highlighting
-    document.querySelectorAll('.highlight-links-extension').forEach(el => {
-      el.classList.remove('highlight-links-extension');
-    });
-    window.__highlightLinksActive__ = false;
-  } else {
-    // Add highlighting
-    const links = document.querySelectorAll('a, button, [role="button"], [onclick]');
-    
-    links.forEach(link => {
-      link.classList.add('highlight-links-extension');
-    });
-  
-    // Inject the CSS if not already added
-    if (!document.getElementById('highlight-links-style')) {
-      const style = document.createElement('style');
-      style.id = 'highlight-links-style';
-      style.textContent = `
-        .highlight-links-extension {
-          outline: 3px solid #ff5722;
-          background-color: rgba(255, 87, 34, 0.1);
-          border-radius: 4px;
-        }
-      `;
-      document.head.appendChild(style);
-    }
-  
-    window.__highlightLinksActive__ = true;
-  }
-  
+// Track state globally
+let isHighlighting = false;
+
+chrome.action.onClicked.addListener((tab) => {
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["toggleHighlight.js"]
+  });
+
+  // Toggle icon depending on state
+  isHighlighting = !isHighlighting;
+
+  const path = isHighlighting
+    ? {
+        16: "icons/icon16_active.png",
+        32: "icons/icon32_active.png",
+        48: "icons/icon48_active.png",
+        128: "icons/icon128_active.png"
+      }
+    : {
+        16: "icons/icon16.png",
+        32: "icons/icon32.png",
+        48: "icons/icon48.png",
+        128: "icons/icon128.png"
+      };
+
+  chrome.action.setIcon({ path });
+});
